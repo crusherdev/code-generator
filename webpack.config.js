@@ -3,7 +3,8 @@ const config = {
 	entry: './src/index.ts',
 	output: {
 		path: path.resolve(__dirname, 'build'),
-		filename: 'index.js'
+		filename: 'index.js',
+		libraryTarget: 'commonjs2'
 	},
 	module: {
 		rules: [
