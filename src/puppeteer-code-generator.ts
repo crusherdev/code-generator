@@ -11,20 +11,12 @@ import {
 	SCROLL_TO_VIEW
 } from "./constants/eventsToRecord";
 
-const importPlayWright = `const playwright = require('playwright');\n\n`
+const importPlayWright = `const puppeteer = require('puppeteer');\n\n`
 
-const header = `const browser = await playwright["chrome"].launch();
+const header = `const browser = puppeteer.launch();
 const page = await context.newPage();\n`
 
 const footer = `await browser.close();\n`
-
-const wrappedHeader = `(async () => {
-  const browser = await playwright["chromium"].launch();
-  const page = await browser.newPage();\n`
-
-const wrappedFooter = `  await browser.close()
-})()\n`;
-
 
 const extractInfoUsingScriptFunction = `async function extractInfoUsingScript(page, selector, validationScript){
     const elHandle = await page.$(selector);
@@ -47,7 +39,7 @@ export default class PlaywrightCodeGenerator {
 
 	generate(events){
 		const generatedEventsCode = this._handleEvents(events);
-		return importPlayWright + this.addHelperFunctionsIfAny() + wrappedHeader + generatedEventsCode + wrappedFooter;
+		return importPlayWright + this.addHelperFunctionsIfAny() + header + generatedEventsCode + footer;
 	}
 
 	addHelperFunctionsIfAny(){
