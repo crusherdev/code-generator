@@ -13,8 +13,8 @@ import {
 
 const importPlayWright = `const playwright = require('playwright');\n\n`
 
-const header = `const browser = await playwright["chrome"].launch();
-const page = await context.newPage();\n`
+const header = `const browser = await playwright["chromium"].launch();
+const page = await browser.newPage();\n`
 
 const footer = `await browser.close();\n`
 

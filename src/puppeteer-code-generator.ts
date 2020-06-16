@@ -14,7 +14,7 @@ import {
 const importPlayWright = `const puppeteer = require('puppeteer');\n\n`
 
 const header = `const browser = puppeteer.launch();
-const page = await context.newPage();\n`
+const page = await browser.newPage();\n`
 
 const footer = `await browser.close();\n`
 
