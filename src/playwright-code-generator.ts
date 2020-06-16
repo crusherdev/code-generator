@@ -38,7 +38,7 @@ export default class CodeGenerator {
 		this.helperFunctionsToInclude = {};
 	}
 
-	generate(events){
+	generate(events: any){
 		const generatedEventsCode = this._handleEvents(events);
 		return importPlayWright + this.addHelperFunctionsIfAny() + header + generatedEventsCode + footer;
 	}
