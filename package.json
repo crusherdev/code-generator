@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "scripts": {
     "clean": "rm dist/bundle.js",
-    "build-dev": "webpack -d --mode development",
+    "dev": "nodemon --watch src --ext js,ts  --exec 'webpack -d --mode development' ",
     "build-prod": "webpack -p --mode production"
   },
   "author": "",
@@ -15,5 +15,9 @@
     "typescript": "^3.9.5",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11"
+  },
+  "dependencies": {
+    "nodemon": "^2.0.4",
+    "webpack-dev-server": "^3.11.0"
   }
 }

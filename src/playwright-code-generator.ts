@@ -61,33 +61,33 @@ export default class CodeGenerator {
 			const { event_type, selector, value } = events[i];
 			switch (event_type) {
 				case NAVIGATE_URL:
-					code += `  await page.goto('${value}');\n`;
+					code += `await page.goto('${value}');\n`;
 					break;
 				case CLICK:
-					code += `  await page.click('${selector}');\n`;
+					code += `await page.click('${selector}');\n`;
 					break;
 				case HOVER:
-					code += `  await page.hover('${selector}');\n`;
+					code += `await page.hover('${selector}');\n`;
 					break;
 				case SCREENSHOT:
 					screenShotFileName = selector.replace(/[^\w\s]/gi, '').replace(/ /g, '_') + `_${i}`;
-					code += `  const h_${i} =  await page.$('${selector}');\n   h_${i}.screenshot({path: '${screenShotFileName}.png'});\n`
+					code += `const h_${i} = await page.$('${selector}');\n   h_${i}.screenshot({path: '${screenShotFileName}.png'});\n`
 					break;
 				case PAGE_SCREENSHOT:
 					screenShotFileName = value.replace(/[^\w\s]/gi, '').replace(/ /g,"_") + `_${i}`;
-					code += `  await page.screenshot({path: '/tmp/images/${screenShotFileName}.png'});\n`;
+					code += `await page.screenshot({path: '/tmp/images/${screenShotFileName}.png'});\n`;
 					break;
 				case SCROLL_TO_VIEW:
-					code += `  const stv_${i} =  await page.$('${selector}');\n  stv_${i}.scrollIntoViewIfNeeded();\n`
+					code += `const stv_${i} = await page.$('${selector}');\n  stv_${i}.scrollIntoViewIfNeeded();\n`
 					break;
 				case INPUT:
-					code += `  await page.type('${selector}', '${value}');\n`;
+					code += `await page.type('${selector}', '${value}');\n`;
 					break;
 				case EXTRACT_INFO:
 					const variable_name = Object.keys(value)[0];
 					const validation_script = value[variable_name];
 					this.helperFunctionsToInclude[EXTRACT_INFO] = true;
-					code += `  let ${variable_name} = await extractInfoUsingScript(page, '${selector}', ` + '`' + validation_script + '`' + `)\n`;
+					code += `let ${variable_name} = await extractInfoUsingScript(page, '${selector}', ` + '`' + validation_script + '`' + `)\n`;
 					break;
 				case ASSERT_TEXT:
 					this.helperFunctionsToInclude[ASSERT_TEXT] = true;
