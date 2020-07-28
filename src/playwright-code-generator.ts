@@ -71,14 +71,14 @@ export default class CodeGenerator {
 					break;
 				case SCREENSHOT:
 					screenShotFileName = selector.replace(/[^\w\s]/gi, '').replace(/ /g, '_') + `_${i}`;
-					code += `const h_${i} = await page.$('${selector}');\n   h_${i}.screenshot({path: '${screenShotFileName}.png'});\n`
+					code += `const h_${i} = await page.$('${selector}');\nawait h_${i}.screenshot({path: '${screenShotFileName}.png'});\n`
 					break;
 				case PAGE_SCREENSHOT:
 					screenShotFileName = value.replace(/[^\w\s]/gi, '').replace(/ /g,"_") + `_${i}`;
 					code += `await page.screenshot({path: '${screenShotFileName}.png'});\n`;
 					break;
 				case SCROLL_TO_VIEW:
-					code += `const stv_${i} = await page.$('${selector}');\n  stv_${i}.scrollIntoViewIfNeeded();\n`
+					code += `const stv_${i} = await page.$('${selector}');\nstv_${i}.scrollIntoViewIfNeeded();\n`
 					break;
 				case INPUT:
 					code += `await page.type('${selector}', '${value}');\n`;
