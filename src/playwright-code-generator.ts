@@ -94,30 +94,30 @@ export default class CodeGenerator {
 					}
 					break;
 				case CLICK:
-					code += `await page.waitForSelector('${selector}', {state: "attached");\nawait page.click('${selector}');\n`;
+					code += `await page.waitForSelector('${selector}', {state: "attached"});\nawait page.click('${selector}');\n`;
 					break;
 				case HOVER:
-					code += `await page.waitForSelector('${selector}', {state: "attached");\nawait page.hover('${selector}');\n`;
+					code += `await page.waitForSelector('${selector}', {state: "attached"});\nawait page.hover('${selector}');\n`;
 					break;
 				case SCREENSHOT:
 					screenShotFileName = selector.replace(/[^\w\s]/gi, '').replace(/ /g, '_') + `_${i}`;
-					code += `await page.waitForSelector('${selector}', {state: "attached");\nconst h_${i} = await page.$('${selector}');\nawait h_${i}.screenshot({path: '${screenShotFileName}.png'});\n`
+					code += `await page.waitForSelector('${selector}', {state: "attached"});\nconst h_${i} = await page.$('${selector}');\nawait h_${i}.screenshot({path: '${screenShotFileName}.png'});\n`
 					break;
 				case PAGE_SCREENSHOT:
 					screenShotFileName = value.replace(/[^\w\s]/gi, '').replace(/ /g,"_") + `_${i}`;
 					code += `await page.screenshot({path: '${screenShotFileName}.png', fullPage: true});\n`;
 					break;
 				case SCROLL_TO_VIEW:
-					code += `await page.waitForSelector('${selector}', {state: "attached");\nconst stv_${i} = await page.$('${selector}');\nstv_${i}.scrollIntoViewIfNeeded();\n`
+					code += `await page.waitForSelector('${selector}', {state: "attached"});\nconst stv_${i} = await page.$('${selector}');\nstv_${i}.scrollIntoViewIfNeeded();\n`
 					break;
 				case INPUT:
-					code += `await page.waitForSelector('${selector}', {state: "attached");\nawait page.type('${selector}', '${value}');\n`;
+					code += `await page.waitForSelector('${selector}', {state: "attached"});\nawait page.type('${selector}', '${value}');\n`;
 					break;
 				case EXTRACT_INFO:
 					const variable_name = Object.keys(value)[0];
 					const validation_script = value[variable_name];
 					this.helperFunctionsToInclude[EXTRACT_INFO] = true;
-					code += `await page.waitForSelector('${selector}', {state: "attached");\nlet ${variable_name} = await extractInfoUsingScript(page, '${selector}', ` + '`' + validation_script + '`' + `)\n`;
+					code += `await page.waitForSelector('${selector}', {state: "attached"});\nlet ${variable_name} = await extractInfoUsingScript(page, '${selector}', ` + '`' + validation_script + '`' + `)\n`;
 					break;
 				case ASSERT_TEXT:
 					this.helperFunctionsToInclude[ASSERT_TEXT] = true;
