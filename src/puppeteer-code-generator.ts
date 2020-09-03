@@ -58,6 +58,7 @@ export default class PlaywrightCodeGenerator {
 		let code = '\n';
 		for (let i = 0; i < events.length; i++) {
 			const { event_type, selector, value } = events[i];
+			//@TODO: Add support for puppeteer user agent
 			switch (event_type) {
 				case NAVIGATE_URL:
 					code += `  await page.goto('${value}');\n`;

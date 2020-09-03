@@ -8,13 +8,14 @@ import {
 	NAVIGATE_URL,
 	PAGE_SCREENSHOT,
 	SCREENSHOT,
-	SCROLL_TO_VIEW
+	SCROLL_TO_VIEW, SET_DEVICE
 } from "./constants/eventsToRecord";
+import userAgents from "./constants/userAgents";
+import devices from "./constants/devices";
 
 const importPlayWright = `const playwright = require('playwright');\n\n`
 
-const header = `const browser = await playwright["chromium"].launch();
-const page = await browser.newPage();\n`
+const header = `const browser = await playwright["chromium"].launch();\n`
 
 const footer = `await browser.close();\n`
 
@@ -57,11 +58,40 @@ export default class CodeGenerator {
 	_handleEvents(events: any){
 		let screenShotFileName: string;
 		let code = '\n';
+		let firstTimeNavigate = true;
+		let width = 1280;
+		let height = 720;
+		if(events[0] && events[0].event_type!==SET_DEVICE) {
+			const device = devices[7];
+			const userAgent = userAgents.find(agent => {
+				return agent.name === device.userAgent;
+			});
+			width = device.width;
+			height = device.height;
+			code += `const browserContext = await browser.newContext({width: '${device.width}px', height: '${device.height}px', userAgent: "${userAgent.value}"});\n`;
+		} else if(events[0] && events[0].event_type===SET_DEVICE) {
+			const {value: deviceId} = events[0];
+			const deviceFound = devices.find((_device)=>{
+				return _device.id === deviceId;
+			});
+			const device = deviceFound ? deviceFound : devices[7];
+			const userAgent = userAgents.find(agent => {
+				return agent.name === device.userAgent;
+			});
+			width = device.width;
+			height = device.height;
+			code += `const browserContext = await browser.newContext({userAgent: '${userAgent.value}', viewport: { width: ${device.width}, height: ${device.height}}});\n`;
+		}
 		for (let i = 0; i < events.length; i++) {
 			const { event_type, selector, value } = events[i];
 			switch (event_type) {
 				case NAVIGATE_URL:
-					code += `await page.goto('${value}');\n`;
+					if(firstTimeNavigate) {
+						firstTimeNavigate = false;
+						code += `const page = await browserContext.newPage({});\nawait page.goto('${value}');\n`;
+					} else {
+						code += `await page.goto('${value}');\n`;
+					}
 					break;
 				case CLICK:
 					code += `await page.click('${selector}');\n`;
@@ -75,7 +105,7 @@ export default class CodeGenerator {
 					break;
 				case PAGE_SCREENSHOT:
 					screenShotFileName = value.replace(/[^\w\s]/gi, '').replace(/ /g,"_") + `_${i}`;
-					code += `await page.screenshot({path: '${screenShotFileName}.png'});\n`;
+					code += `await page.screenshot({path: '${screenShotFileName}.png', fullPage: true});\n`;
 					break;
 				case SCROLL_TO_VIEW:
 					code += `const stv_${i} = await page.$('${selector}');\nstv_${i}.scrollIntoViewIfNeeded();\n`
