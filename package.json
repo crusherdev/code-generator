@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "rm dist/bundle.js",
     "dev": "nodemon --watch src --ext js,ts  --exec 'webpack -d --mode development' ",
-    "build-prod": "webpack -p --mode production"
+    "build": "webpack -p --mode production"
   },
   "author": "",
   "license": "ISC",
