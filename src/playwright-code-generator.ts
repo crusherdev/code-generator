@@ -31,6 +31,16 @@ const extractInfoUsingScriptFunction = `async function extractInfoUsingScript(pa
     return output;
 }\n\n`;
 
+const sleepScriptFunction = `
+const DEFAULT_SLEEP_TIME = 500;
+const TYPE_DELAY = 100;
+function sleep(time){
+    return new Promise((resolve, reject)=>{
+        setTimeout(()=>{
+            resolve(true);
+        }, time);
+    })
+}\n\n`;
 
 export default class CodeGenerator {
 	helperFunctionsToInclude: any;
@@ -39,12 +49,12 @@ export default class CodeGenerator {
 		this.helperFunctionsToInclude = {};
 	}
 
-	generate(events: any){
-		const generatedEventsCode = this._handleEvents(events);
-		return importPlayWright + this.addHelperFunctionsIfAny() + header + generatedEventsCode + footer;
+	generate(events: any, isRecordingVideo: boolean = false){
+		const generatedEventsCode = this._handleEvents(events, isRecordingVideo);
+		return importPlayWright + this.addHelperFunctionsIfAny(isRecordingVideo) + header + generatedEventsCode + (isRecordingVideo ? `await captureVideo.stop();\n` : '') + footer;
 	}
 
-	addHelperFunctionsIfAny(){
+	addHelperFunctionsIfAny(isRecordingVideo = false){
 		const helperFunctions = Object.keys(this.helperFunctionsToInclude);
 		let codeToAdd = "";
 		for(let fun of helperFunctions){
@@ -52,10 +62,13 @@ export default class CodeGenerator {
 				codeToAdd+= extractInfoUsingScriptFunction;
 			}
 		}
+		if(isRecordingVideo){
+			codeToAdd += sleepScriptFunction;
+		}
 		return codeToAdd;
 	}
 
-	_handleEvents(events: any){
+	_handleEvents(events: any, isRecordingVideo = false){
 		let screenShotFileName: string;
 		let code = '\n';
 		let firstTimeNavigate = true;
@@ -88,39 +101,66 @@ export default class CodeGenerator {
 				case NAVIGATE_URL:
 					if(firstTimeNavigate) {
 						firstTimeNavigate = false;
-						code += `const page = await browserContext.newPage({});\nawait page.goto('${value}');\n`;
+						code += `const page = await browserContext.newPage({});\n` + (isRecordingVideo ? `const {saveVideo} = require('playwright-video');\nconst captureVideo = await saveVideo(page, 'video.mp4');\n` : '') +`await page.goto('${value}');\n`;
 					} else {
-						code += `await page.goto('${value}');\n`;
+						code += `await page.goto('${value}');\nawait sleep(DEFAULT_SLEEP_TIME);\n`;
+					}
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					break;
 				case CLICK:
 					code += `await page.waitForSelector('${selector}', {state: "attached"});\nawait page.click('${selector}');\n`;
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
+					}
 					break;
 				case HOVER:
 					code += `await page.waitForSelector('${selector}', {state: "attached"});\nawait page.hover('${selector}');\n`;
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
+					}
 					break;
 				case SCREENSHOT:
 					screenShotFileName = selector.replace(/[^\w\s]/gi, '').replace(/ /g, '_') + `_${i}`;
 					code += `await page.waitForSelector('${selector}', {state: "attached"});\nconst h_${i} = await page.$('${selector}');\nawait h_${i}.screenshot({path: '${screenShotFileName}.png'});\n`
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
+					}
 					break;
 				case PAGE_SCREENSHOT:
 					screenShotFileName = value.replace(/[^\w\s]/gi, '').replace(/ /g,"_") + `_${i}`;
 					code += `await page.screenshot({path: '${screenShotFileName}.png', fullPage: true});\n`;
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
+					}
 					break;
 				case SCROLL_TO_VIEW:
 					code += `await page.waitForSelector('${selector}', {state: "attached"});\nconst stv_${i} = await page.$('${selector}');\nstv_${i}.scrollIntoViewIfNeeded();\n`
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
+					}
 					break;
 				case INPUT:
-					code += `await page.waitForSelector('${selector}', {state: "attached"});\nawait page.type('${selector}', '${value}');\n`;
+					code += `await page.waitForSelector('${selector}', {state: "attached"});\nawait page.type('${selector}', '${value}', {delay: ${isRecordingVideo ? 'TYPE_DELAY' : 25}});\n`;
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
+					}
 					break;
 				case EXTRACT_INFO:
 					const variable_name = Object.keys(value)[0];
 					const validation_script = value[variable_name];
 					this.helperFunctionsToInclude[EXTRACT_INFO] = true;
 					code += `await page.waitForSelector('${selector}', {state: "attached"});\nlet ${variable_name} = await extractInfoUsingScript(page, '${selector}', ` + '`' + validation_script + '`' + `)\n`;
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
+					}
 					break;
 				case ASSERT_TEXT:
 					this.helperFunctionsToInclude[ASSERT_TEXT] = true;
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
+					}
 					code += ` `;
 				default:
 					console.error("Not supported event");
