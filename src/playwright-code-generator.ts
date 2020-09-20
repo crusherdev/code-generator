@@ -110,7 +110,7 @@ export default class CodeGenerator {
 					}
 					break;
 				case CLICK:
-					code += `await page.waitForSelector('${selector}', {state: "attached"});\nawait page.click('${selector}');\n`;
+					code += `await page.waitForSelector('${selector}', {state: "attached"});\nconst stv_${i} = await page.$('${selector}');\nawait stv_${i}.scrollIntoViewIfNeeded();\nawait stv_${i}.dispatchEvent('click');\n`
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
@@ -136,7 +136,7 @@ export default class CodeGenerator {
 					}
 					break;
 				case SCROLL_TO_VIEW:
-					code += `await page.waitForSelector('${selector}', {state: "attached"});\nconst stv_${i} = await page.$('${selector}');\nstv_${i}.scrollIntoViewIfNeeded();\n`
+					code += `await page.waitForSelector('${selector}', {state: "attached"});\nconst stv_${i} = await page.$('${selector}');\nawait stv_${i}.scrollIntoViewIfNeeded();\n`
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
