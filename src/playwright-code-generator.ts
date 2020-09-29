@@ -96,7 +96,7 @@ export default class CodeGenerator {
 			code += `const browserContext = await browser.newContext({userAgent: '${userAgent.value}', viewport: { width: ${device.width}, height: ${device.height}}});\n`;
 		}
 		for (let i = 0; i < events.length; i++) {
-			const { event_type, selector, value } = events[i];
+			const { event_type, selectors, value } = events[i];
 			switch (event_type) {
 				case NAVIGATE_URL:
 					if(firstTimeNavigate) {
@@ -110,20 +110,20 @@ export default class CodeGenerator {
 					}
 					break;
 				case CLICK:
-					code += `await page.waitForSelector('${selector}', {state: "attached"});\nconst stv_${i} = await page.$('${selector}');\nawait stv_${i}.scrollIntoViewIfNeeded();\nawait stv_${i}.dispatchEvent('click');\n`
+					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nconst stv_${i} = await page.$('${selectors[0].value}');\nawait stv_${i}.scrollIntoViewIfNeeded();\nawait stv_${i}.dispatchEvent('click');\n`
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					break;
 				case HOVER:
-					code += `await page.waitForSelector('${selector}', {state: "attached"});\nawait page.hover('${selector}');\n`;
+					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nawait page.hover('${selectors[0].value}');\n`;
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					break;
 				case SCREENSHOT:
-					screenShotFileName = selector.replace(/[^\w\s]/gi, '').replace(/ /g, '_') + `_${i}`;
-					code += `await page.waitForSelector('${selector}', {state: "attached"});\nconst h_${i} = await page.$('${selector}');\nawait h_${i}.screenshot({path: '${screenShotFileName}.png'});\n`
+					screenShotFileName = selectors[0].value.replace(/[^\w\s]/gi, '').replace(/ /g, '_') + `_${i}`;
+					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nconst h_${i} = await page.$('${selectors[0].value}');\nawait h_${i}.screenshot({path: '${screenShotFileName}.png'});\n`
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
@@ -136,13 +136,13 @@ export default class CodeGenerator {
 					}
 					break;
 				case SCROLL_TO_VIEW:
-					code += `await page.waitForSelector('${selector}', {state: "attached"});\nconst stv_${i} = await page.$('${selector}');\nawait stv_${i}.scrollIntoViewIfNeeded();\n`
+					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nconst stv_${i} = await page.$('${selectors[0].value}');\nawait stv_${i}.scrollIntoViewIfNeeded();\n`
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					break;
 				case INPUT:
-					code += `await page.waitForSelector('${selector}', {state: "attached"});\nawait page.type('${selector}', '${value}', {delay: ${isRecordingVideo ? 'TYPE_DELAY' : 25}});\n`;
+					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nawait page.type('${selectors[0].value}', '${value}', {delay: ${isRecordingVideo ? 'TYPE_DELAY' : 25}});\n`;
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
@@ -151,7 +151,7 @@ export default class CodeGenerator {
 					const variable_name = Object.keys(value)[0];
 					const validation_script = value[variable_name];
 					this.helperFunctionsToInclude[EXTRACT_INFO] = true;
-					code += `await page.waitForSelector('${selector}', {state: "attached"});\nlet ${variable_name} = await extractInfoUsingScript(page, '${selector}', ` + '`' + validation_script + '`' + `)\n`;
+					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nlet ${variable_name} = await extractInfoUsingScript(page, '${selectors[0].value}', ` + '`' + validation_script + '`' + `)\n`;
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
