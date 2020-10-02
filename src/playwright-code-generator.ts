@@ -51,7 +51,7 @@ export default class CodeGenerator {
 
 	generate(events: any, isRecordingVideo: boolean = false){
 		const generatedEventsCode = this._handleEvents(events, isRecordingVideo);
-		return importPlayWright + this.addHelperFunctionsIfAny(isRecordingVideo) + header + generatedEventsCode + (isRecordingVideo ? `await captureVideo.stop();\n` : '') + footer;
+		return importPlayWright + this.addHelperFunctionsIfAny(isRecordingVideo) + (isRecordingVideo ? `let captureVideo;\n` : ``) + header + generatedEventsCode + (isRecordingVideo ? `await captureVideo.stop();\n}catch(ex){ await captureVideo.stop(); throw ex;}\n` : '') + footer;
 	}
 
 	addHelperFunctionsIfAny(isRecordingVideo = false){
@@ -101,7 +101,7 @@ export default class CodeGenerator {
 				case NAVIGATE_URL:
 					if(firstTimeNavigate) {
 						firstTimeNavigate = false;
-						code += `const page = await browserContext.newPage({});\n` + (isRecordingVideo ? `const {saveVideo} = require('playwright-video');\nconst captureVideo = await saveVideo(page, 'video.mp4');\n` : '') +`await page.goto('${value}');\n`;
+						code += `const page = await browserContext.newPage({});\n` + (isRecordingVideo ? `const {saveVideo} = require('playwright-video');\ncaptureVideo = await saveVideo(page, 'video.mp4');\ntry{\n` : '') +`await page.goto('${value}');\n`;
 					} else {
 						code += `await page.goto('${value}');\nawait sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
