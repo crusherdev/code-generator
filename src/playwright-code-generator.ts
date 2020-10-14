@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 import {
+	ACTIONS_IN_TEST,
 	ASSERT_TEXT,
 	CLICK, EXTRACT_INFO,
 	HOVER,
@@ -17,8 +18,13 @@ const importPlayWright = `const playwright = require('playwright');\n\n`
 
 const header = `const browser = await playwright["chromium"].launch();\n`
 
-const footer = `await browser.close();\n`
+const footer = `await browser.close();\n`;
 
+const logStepsFunction = `function logStep(type, data, meta){
+	if(typeof _logStepToMongo !== "undefined"){
+		_logStepToMongo(type, data, meta);
+	}
+}\n`;
 
 const extractInfoUsingScriptFunction = `async function extractInfoUsingScript(page, selector, validationScript){
     const elHandle = await page.$(selector);
@@ -49,12 +55,12 @@ export default class CodeGenerator {
 		this.helperFunctionsToInclude = {};
 	}
 
-	generate(events: any, isRecordingVideo: boolean = false){
-		const generatedEventsCode = this._handleEvents(events, isRecordingVideo);
-		return importPlayWright + this.addHelperFunctionsIfAny(isRecordingVideo) + (isRecordingVideo ? `let captureVideo;\n` : ``) + header + generatedEventsCode + (isRecordingVideo ? `await captureVideo.stop();\n}catch(ex){ await captureVideo.stop(); throw ex;}\n` : '') + footer;
+	generate(events: any, isRecordingVideo: boolean = false, isLiveProgress = false){
+		const generatedEventsCode = this._handleEvents(events, isRecordingVideo, isLiveProgress);
+		return importPlayWright + this.addHelperFunctionsIfAny(isRecordingVideo, isLiveProgress) + (isRecordingVideo ? `let captureVideo;\n` : ``) + header + generatedEventsCode + (isRecordingVideo ? `await captureVideo.stop();\n}catch(ex){ await captureVideo.stop(); throw ex;}\n` : '') + footer;
 	}
 
-	addHelperFunctionsIfAny(isRecordingVideo = false){
+	addHelperFunctionsIfAny(isRecordingVideo = false, isLiveProgress = false){
 		const helperFunctions = Object.keys(this.helperFunctionsToInclude);
 		let codeToAdd = "";
 		for(let fun of helperFunctions){
@@ -65,10 +71,13 @@ export default class CodeGenerator {
 		if(isRecordingVideo){
 			codeToAdd += sleepScriptFunction;
 		}
+		if(isLiveProgress){
+			codeToAdd += logStepsFunction;
+		}
 		return codeToAdd;
 	}
 
-	_handleEvents(events: any, isRecordingVideo = false){
+	_handleEvents(events: any, isRecordingVideo = false, isLiveProgress = false){
 		let screenShotFileName: string;
 		let code = '\n';
 		let firstTimeNavigate = true;
@@ -94,6 +103,7 @@ export default class CodeGenerator {
 			width = device.width;
 			height = device.height;
 			code += `const browserContext = await browser.newContext({userAgent: '${userAgent.value}', viewport: { width: ${device.width}, height: ${device.height}}});\n`;
+			code += `logStep('${ACTIONS_IN_TEST.SET_DEVICE}', {status: 'DONE', message: 'Set user agent to ${device.name}'}, {name: '${device.name}', width: ${width}, height: ${height}, userAgent: '${userAgent.value}'})\n`;
 		}
 		for (let i = 0; i < events.length; i++) {
 			const { event_type, selectors, value } = events[i];
@@ -108,17 +118,26 @@ export default class CodeGenerator {
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
+					if(isLiveProgress){
+						code += `logStep('${ACTIONS_IN_TEST.NAVIGATE_URL}', {status: 'DONE', message: 'Navigated to ${value}'})\n`;
+					}
 					break;
 				case CLICK:
 					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nconst stv_${i} = await page.$('${selectors[0].value}');\nawait stv_${i}.scrollIntoViewIfNeeded();\nawait stv_${i}.dispatchEvent('click');\n`
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
+					if(isLiveProgress){
+						code += `logStep('${ACTIONS_IN_TEST.CLICK}', {status: 'DONE', message: 'Clicked on ${selectors[0].value}'}, {selector: '${selectors[0].value}')\n`;
+					}
 					break;
 				case HOVER:
 					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nawait page.hover('${selectors[0].value}');\n`;
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
+					}
+					if(isLiveProgress){
+						code += `logStep('${ACTIONS_IN_TEST.HOVER}', {status: 'DONE', message: 'Clicked on ${selectors[0].value}'}, {selector: '${selectors[0].value}')\n`;
 					}
 					break;
 				case SCREENSHOT:
@@ -127,6 +146,9 @@ export default class CodeGenerator {
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
+					if(isLiveProgress){
+						code += `logStep('${ACTIONS_IN_TEST.ELEMENT_SCREENSHOT}', {status: 'DONE', message: 'Took screenshot of ${selectors[0].value}'}, {selector: '${selectors[0].value}')\n`;
+					}
 					break;
 				case PAGE_SCREENSHOT:
 					screenShotFileName = value.replace(/[^\w\s]/gi, '').replace(/ /g,"_") + `_${i}`;
@@ -134,17 +156,26 @@ export default class CodeGenerator {
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
+					if(isLiveProgress){
+						code += `logStep('${ACTIONS_IN_TEST.PAGE_SCREENSHOT}', {status: 'DONE', message: 'Took page screenshot'}, {selector: 'body')\n`;
+					}
 					break;
 				case SCROLL_TO_VIEW:
 					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nconst stv_${i} = await page.$('${selectors[0].value}');\nawait stv_${i}.scrollIntoViewIfNeeded();\n`
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
+					if(isLiveProgress){
+						code += `logStep('${ACTIONS_IN_TEST.SCROLL_TO_VIEW}', {status: 'DONE', message: 'Scroll until this is in view, ${selectors[0].value}'}, {selector: '${selectors[0].value}')\n`;
+					}
 					break;
 				case INPUT:
 					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nawait page.type('${selectors[0].value}', '${value}', {delay: ${isRecordingVideo ? 'TYPE_DELAY' : 25}});\n`;
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
+					}
+					if(isLiveProgress){
+						code += `logStep('${ACTIONS_IN_TEST.INPUT}', {status: 'DONE', message: 'Type ${value} in ${selectors[0].value}'}, {selector: '${selectors[0].value}', value: '${value}')\n`;
 					}
 					break;
 				case EXTRACT_INFO:
@@ -155,6 +186,9 @@ export default class CodeGenerator {
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
+					if(isLiveProgress){
+						code += `logStep('${ACTIONS_IN_TEST.EXTRACT_INFO}', {status: 'DONE', message: 'Extract info from ${selectors[0].value}'}, {selector: '${selectors[0].value}')\n`;
+					}
 					break;
 				case ASSERT_TEXT:
 					this.helperFunctionsToInclude[ASSERT_TEXT] = true;
@@ -162,6 +196,9 @@ export default class CodeGenerator {
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					code += ` `;
+					if(isLiveProgress){
+						code += `logStep('${ACTIONS_IN_TEST.ASSERT_ELEMENT}', {status: 'DONE', message: 'Assert element info from ${selectors[0].value}'}, {selector: '${selectors[0].value}')\n`;
+					}
 				default:
 					console.error("Not supported event");
 			}
