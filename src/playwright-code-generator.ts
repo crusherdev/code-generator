@@ -104,7 +104,7 @@ export default class CodeGenerator {
 			height = device.height;
 			code += `const browserContext = await browser.newContext({userAgent: '${userAgent.value}', viewport: { width: ${device.width}, height: ${device.height}}});\n`;
 			if(isLiveProgress) {
-				code += `logStep('${ACTIONS_IN_TEST.SET_DEVICE}', {status: 'DONE', message: 'Set user agent to ${device.name}'}, {name: '${device.name}', width: ${width}, height: ${height}, userAgent: '${userAgent.value}'});\n`;
+				code += `await ('${ACTIONS_IN_TEST.SET_DEVICE}', {status: 'DONE', message: 'Set user agent to ${device.name}'}, {name: '${device.name}', width: ${width}, height: ${height}, userAgent: '${userAgent.value}'});\n`;
 			}
 		}
 
@@ -122,7 +122,7 @@ export default class CodeGenerator {
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					if(isLiveProgress){
-						code += `logStep('${ACTIONS_IN_TEST.NAVIGATE_URL}', {status: 'DONE', message: 'Navigated to ${value}'});\n`;
+						code += `await logStep('${ACTIONS_IN_TEST.NAVIGATE_URL}', {status: 'DONE', message: 'Navigated to ${value}'});\n`;
 					}
 					break;
 				case CLICK:
@@ -131,7 +131,7 @@ export default class CodeGenerator {
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					if(isLiveProgress){
-						code += `logStep('${ACTIONS_IN_TEST.CLICK}', {status: 'DONE', message: 'Clicked on ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+						code += `await logStep('${ACTIONS_IN_TEST.CLICK}', {status: 'DONE', message: 'Clicked on ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
 					}
 					break;
 				case HOVER:
@@ -140,7 +140,7 @@ export default class CodeGenerator {
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					if(isLiveProgress){
-						code += `logStep('${ACTIONS_IN_TEST.HOVER}', {status: 'DONE', message: 'Clicked on ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+						code += `await logStep('${ACTIONS_IN_TEST.HOVER}', {status: 'DONE', message: 'Clicked on ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
 					}
 					break;
 				case SCREENSHOT:
@@ -150,7 +150,7 @@ export default class CodeGenerator {
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					if(isLiveProgress){
-						code += `logStep('${ACTIONS_IN_TEST.ELEMENT_SCREENSHOT}', {status: 'DONE', message: 'Took screenshot of ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+						code += `await logStep('${ACTIONS_IN_TEST.ELEMENT_SCREENSHOT}', {status: 'DONE', message: 'Took screenshot of ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
 					}
 					break;
 				case PAGE_SCREENSHOT:
@@ -160,7 +160,7 @@ export default class CodeGenerator {
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					if(isLiveProgress){
-						code += `logStep('${ACTIONS_IN_TEST.PAGE_SCREENSHOT}', {status: 'DONE', message: 'Took page screenshot'}, {selector: 'body'});\n`;
+						code += `await logStep('${ACTIONS_IN_TEST.PAGE_SCREENSHOT}', {status: 'DONE', message: 'Took page screenshot'}, {selector: 'body'});\n`;
 					}
 					break;
 				case SCROLL_TO_VIEW:
@@ -169,7 +169,7 @@ export default class CodeGenerator {
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					if(isLiveProgress){
-						code += `logStep('${ACTIONS_IN_TEST.SCROLL_TO_VIEW}', {status: 'DONE', message: 'Scroll until this is in view, ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+						code += `await logStep('${ACTIONS_IN_TEST.SCROLL_TO_VIEW}', {status: 'DONE', message: 'Scroll until this is in view, ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
 					}
 					break;
 				case INPUT:
@@ -178,7 +178,7 @@ export default class CodeGenerator {
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					if(isLiveProgress){
-						code += `logStep('${ACTIONS_IN_TEST.INPUT}', {status: 'DONE', message: 'Type ${value} in ${selectors[0].value}'}, {selector: '${selectors[0].value}', value: '${value}'});\n`;
+						code += `await logStep('${ACTIONS_IN_TEST.INPUT}', {status: 'DONE', message: 'Type ${value} in ${selectors[0].value}'}, {selector: '${selectors[0].value}', value: '${value}'});\n`;
 					}
 					break;
 				case EXTRACT_INFO:
@@ -190,7 +190,7 @@ export default class CodeGenerator {
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					if(isLiveProgress){
-						code += `logStep('${ACTIONS_IN_TEST.EXTRACT_INFO}', {status: 'DONE', message: 'Extract info from ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+						code += `await logStep('${ACTIONS_IN_TEST.EXTRACT_INFO}', {status: 'DONE', message: 'Extract info from ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
 					}
 					break;
 				case ASSERT_TEXT:
@@ -200,7 +200,7 @@ export default class CodeGenerator {
 					}
 					code += ` `;
 					if(isLiveProgress){
-						code += `logStep('${ACTIONS_IN_TEST.ASSERT_ELEMENT}', {status: 'DONE', message: 'Assert element info from ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+						code += `await logStep('${ACTIONS_IN_TEST.ASSERT_ELEMENT}', {status: 'DONE', message: 'Assert element info from ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
 					}
 				default:
 					console.error("Not supported event");
