@@ -103,8 +103,11 @@ export default class CodeGenerator {
 			width = device.width;
 			height = device.height;
 			code += `const browserContext = await browser.newContext({userAgent: '${userAgent.value}', viewport: { width: ${device.width}, height: ${device.height}}});\n`;
-			code += `logStep('${ACTIONS_IN_TEST.SET_DEVICE}', {status: 'DONE', message: 'Set user agent to ${device.name}'}, {name: '${device.name}', width: ${width}, height: ${height}, userAgent: '${userAgent.value}'})\n`;
+			if(isLiveProgress) {
+				code += `logStep('${ACTIONS_IN_TEST.SET_DEVICE}', {status: 'DONE', message: 'Set user agent to ${device.name}'}, {name: '${device.name}', width: ${width}, height: ${height}, userAgent: '${userAgent.value}'})\n`;
+			}
 		}
+		
 		for (let i = 0; i < events.length; i++) {
 			const { event_type, selectors, value } = events[i];
 			switch (event_type) {
