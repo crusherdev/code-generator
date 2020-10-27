@@ -119,69 +119,69 @@ export default class CodeGenerator {
 						firstTimeNavigate = false;
 						code += `const page = await browserContext.newPage({});\n` + (isRecordingVideo ? `const {saveVideo} = require('playwright-video');\ncaptureVideo = await saveVideo(page, 'video.mp4');\ntry{\n` : '') +`await page.goto('${value}');\n`;
 					} else {
-						code += `await page.goto('${value}');\nawait sleep(DEFAULT_SLEEP_TIME);\n`;
-					}
-					if(isRecordingVideo){
-						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
+						code += `await page.goto('${value}');\n`;
 					}
 					if(isLiveProgress){
 						code += `await logStep('${ACTIONS_IN_TEST.NAVIGATE_URL}', {status: 'DONE', message: 'Navigated to ${value}'});\n`;
 					}
-					break;
-				case ACTIONS_IN_TEST.CLICK:
-					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nconst stv_${i} = await page.$('${selectors[0].value}');\nawait stv_${i}.scrollIntoViewIfNeeded();\nawait stv_${i}.dispatchEvent('click');\n`
 					if(isRecordingVideo){
 						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
+					break;
+				case ACTIONS_IN_TEST.CLICK:
+					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nconst stv_${i} = await page.$('${selectors[0].value}');\nawait stv_${i}.scrollIntoViewIfNeeded();\nawait stv_${i}.dispatchEvent('click');\n`
 					if(isLiveProgress){
 						code += `await logStep('${ACTIONS_IN_TEST.CLICK}', {status: 'DONE', message: 'Clicked on ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+					}
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					break;
 				case ACTIONS_IN_TEST.HOVER:
 					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nawait page.hover('${selectors[0].value}');\n`;
-					if(isRecordingVideo){
-						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
-					}
 					if(isLiveProgress){
 						code += `await logStep('${ACTIONS_IN_TEST.HOVER}', {status: 'DONE', message: 'Clicked on ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+					}
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					break;
 				case ACTIONS_IN_TEST.ELEMENT_SCREENSHOT:
 					screenShotFileName = selectors[0].value.replace(/[^\w\s]/gi, '').replace(/ /g, '_') + `_${i}`;
 					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nconst h_${i} = await page.$('${selectors[0].value}');\nawait h_${i}.screenshot({path: '${screenShotFileName}.png'});\n`
-					if(isRecordingVideo){
-						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
-					}
 					if(isLiveProgress){
 						code += `await logStep('${ACTIONS_IN_TEST.ELEMENT_SCREENSHOT}', {status: 'DONE', message: 'Took screenshot of ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+					}
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					break;
 				case ACTIONS_IN_TEST.PAGE_SCREENSHOT:
 					screenShotFileName = value.replace(/[^\w\s]/gi, '').replace(/ /g,"_") + `_${i}`;
 					code += `await page.screenshot({path: '${screenShotFileName}.png', fullPage: true});\n`;
-					if(isRecordingVideo){
-						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
-					}
 					if(isLiveProgress){
 						code += `await logStep('${ACTIONS_IN_TEST.PAGE_SCREENSHOT}', {status: 'DONE', message: 'Took page screenshot'}, {selector: 'body'});\n`;
+					}
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					break;
 				case ACTIONS_IN_TEST.SCROLL_TO_VIEW:
 					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nconst stv_${i} = await page.$('${selectors[0].value}');\nawait stv_${i}.scrollIntoViewIfNeeded();\n`
-					if(isRecordingVideo){
-						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
-					}
 					if(isLiveProgress){
 						code += `await logStep('${ACTIONS_IN_TEST.SCROLL_TO_VIEW}', {status: 'DONE', message: 'Scroll until this is in view, ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+					}
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					break;
 				case ACTIONS_IN_TEST.INPUT:
 					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nawait page.type('${selectors[0].value}', '${value}', {delay: ${isRecordingVideo ? 'TYPE_DELAY' : 25}});\n`;
-					if(isRecordingVideo){
-						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
-					}
 					if(isLiveProgress){
 						code += `await logStep('${ACTIONS_IN_TEST.INPUT}', {status: 'DONE', message: 'Type ${value} in ${selectors[0].value}'}, {selector: '${selectors[0].value}', value: '${value}'});\n`;
+					}
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					break;
 				case ACTIONS_IN_TEST.EXTRACT_INFO:
@@ -189,21 +189,21 @@ export default class CodeGenerator {
 					const validation_script = value[variable_name];
 					this.helperFunctionsToInclude[EXTRACT_INFO] = true;
 					code += `await page.waitForSelector('${selectors[0].value}', {state: "attached"});\nlet ${variable_name} = await extractInfoUsingScript(page, '${selectors[0].value}', ` + '`' + validation_script + '`' + `)\n`;
-					if(isRecordingVideo){
-						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
-					}
 					if(isLiveProgress){
 						code += `await logStep('${ACTIONS_IN_TEST.EXTRACT_INFO}', {status: 'DONE', message: 'Extract info from ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+					}
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 					break;
 				case ACTIONS_IN_TEST.ASSERT_ELEMENT:
 					this.helperFunctionsToInclude[ASSERT_TEXT] = true;
-					if(isRecordingVideo){
-						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
-					}
 					code += ` `;
 					if(isLiveProgress){
 						code += `await logStep('${ACTIONS_IN_TEST.ASSERT_ELEMENT}', {status: 'DONE', message: 'Assert element info from ${selectors[0].value}'}, {selector: '${selectors[0].value}'});\n`;
+					}
+					if(isRecordingVideo){
+						code+= `await sleep(DEFAULT_SLEEP_TIME);\n`;
 					}
 				default:
 					console.error("Not supported event");
