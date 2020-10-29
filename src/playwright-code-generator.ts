@@ -57,7 +57,7 @@ export default class CodeGenerator {
 
 	generate(events: any, isRecordingVideo: boolean = false, isLiveProgress = false){
 		const generatedEventsCode = this._handleEvents(events, isRecordingVideo, isLiveProgress);
-		return importPlayWright + this.addHelperFunctionsIfAny(isRecordingVideo, isLiveProgress) + (isRecordingVideo ? `let captureVideo;\n` : ``) + header + generatedEventsCode + (isRecordingVideo ? `await captureVideo.stop();\n}catch(ex){ await captureVideo.stop(); throw ex;}\n` : '') + footer;
+		return importPlayWright + this.addHelperFunctionsIfAny(isRecordingVideo, isLiveProgress) + (isRecordingVideo ? `let captureVideo;\n` : ``) + header + generatedEventsCode + (isRecordingVideo ? `await captureVideo.stop();\n`+ footer +`}catch(ex){ await captureVideo.stop();` + footer + `throw ex;}\n` : footer);
 	}
 
 	addHelperFunctionsIfAny(isRecordingVideo = false, isLiveProgress = false){
